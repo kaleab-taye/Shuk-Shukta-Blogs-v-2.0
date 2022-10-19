@@ -1,11 +1,11 @@
-import { createNewBlog } from '../../../components/api/functions/createNewBlog';
-import { getAllBlogs } from '../../../components/api/functions/getAllBlogs';
+import { getBloggerWithId } from '../../../components/api/functions/blogger/getBloggerWithId';
+import { editBloggerWithId } from '../../../components/api/functions/blogger/editBloggerWithId';
 
 export default async function handler(req, res) {
   if (req.method === 'GET') {
     try {
-      const blogs = await getAllBlogs();
-      res.status(200).json(blogs);
+      const blogger = await getBloggerWithId(req.query);
+      res.status(200).json(blogger);
     } catch (error) {
       res.status(300).json({
         error: {
@@ -15,8 +15,9 @@ export default async function handler(req, res) {
     }
   } else if (req.method === 'POST') {
     try {
-      const resp = await createNewBlog(req.body);
-      res.status(200).json(resp);
+      // console.log(req.query)
+      const blogger = await editBloggerWithId(req.query, req.body);
+      res.status(200).json(blogger);
     } catch (error) {
       res.status(300).json({
         error: {

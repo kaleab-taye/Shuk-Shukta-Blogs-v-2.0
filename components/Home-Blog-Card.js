@@ -16,9 +16,13 @@ export default function HomeBlogCard({ blog }) {
         </h1>
         <p className="text-base sm:text-lg break-word text-justify ">
           {' '}
-          {blog.emphasis ? blog.empasis : blog.body.length > 500 ? blog.body.substr(0, 500) + ' . . .' : blog.body}
+          {blog.emphasis
+            ? blog.empasis
+            : blog.body.length > 500
+            ? blog.body.substr(0, 500) + ' . . .'
+            : blog.body}
         </p>
-        <div className="grid grid-cols-3 m-auto gap-5 p-4">
+        <div className="grid grid-cols-4 m-auto gap-5 p-4">
           <div className="flex ">
             <FontAwesomeIcon
               icon={faEye}
@@ -40,6 +44,9 @@ export default function HomeBlogCard({ blog }) {
             />
 
             <span className="m-auto p-2">{blog.blogMeta.downVote}</span>
+          </div>
+          <div className="flex m-auto">
+            by {blog.author.firstName + ' ' + blog.author.lastName}
           </div>
         </div>
       </div>
