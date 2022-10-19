@@ -17,8 +17,8 @@ export default function index(props) {
     </div>
   );
 }
-
-export const getStaticProps = async () => {
+export const getServerSideProps = async () => {
+  // export const getStaticProps = async () => {
   let url = process.env.url;
   try {
     let res = await fetch(`${url}/api/bloggers`);
@@ -27,7 +27,7 @@ export const getStaticProps = async () => {
       props: {
         bloggers,
       },
-      revalidate: 1,
+      // revalidate: 1,
     };
   } catch (error) {
     console.error(error);
