@@ -15,7 +15,7 @@ let blogs =useContext( blogsContext)
         <Nav />
          <Blog_List />
       </BlogContextProvider>
-      <Footer />
+      {/* <Footer /> */}
     </div>
   );
 }

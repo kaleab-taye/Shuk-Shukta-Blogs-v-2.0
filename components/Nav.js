@@ -1,8 +1,12 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
+  faBlog,
   faCirclePlus,
+  faCircleUser,
+  faHome,
   faSearch,
   faSort,
+  faUsers,
 } from '@fortawesome/free-solid-svg-icons';
 import Link from 'next/link';
 import { useContext, useEffect, useState } from 'react';
@@ -12,18 +16,24 @@ import {
   setBlogContext,
 } from './BlogContextProvider';
 import { useRouter } from 'next/router';
+import { Dropdown } from '@nextui-org/react';
+import {
+  loggedInUserContext,
+  loggedInUserSetterContext,
+  userStatusContext,
+  userStatusSetterContext,
+} from './UserContextProvider';
 
 export default function Nav() {
   var router = useRouter();
+  // user context
+  const userState = useContext(userStatusContext);
+  const setUserState = useContext(userStatusSetterContext);
+  const loggedInUser = useContext(loggedInUserContext);
+  const setLoggedInUser = useContext(loggedInUserSetterContext);
+  console.log('ll', loggedInUser);
 
-  // try {
-  //   var accessToken = JSON.parse(localStorage.getItem('user')).accessToken
-  // } catch (error) {
-  //   console.log(error)
-  //   // router.push('/auth/login')
-
-  // }
-
+  // blog context
   const blogs = useContext(blogsContext);
   const fullBlogs = useContext(fullBlogsContext);
   const setBlogs = useContext(setBlogContext);
@@ -38,30 +48,15 @@ export default function Nav() {
   };
   const [logoutState, setLogoutState] = useState(logoutStateEnum.idl);
 
-  const userLoggedInStateEnum = {
+  const contentSearchableStateEnum = {
     idl: 'idl',
-    loggedIn: 'loggedIn',
-    notLoggedIn: 'notLoggedIn',
+    searchable: 'searchable',
+    notSearchable: 'notSearchable',
   };
-  const [userLoggedInState, setUserLoggedInState] = useState(
-    userLoggedInStateEnum.idl
+  const [contentSearchableState, setContentSearchableState] = useState(
+    contentSearchableStateEnum.searchable
   );
 
-  const [loggedInUser, setLoggedInUser] = useState(null);
-
-  useEffect(() => {
-    try {
-      var user = JSON.parse(localStorage.getItem('user'));
-      if (user.accessToken) {
-        setUserLoggedInState(userLoggedInStateEnum.loggedIn);
-        setLoggedInUser(user);
-      } else {
-        throw 'user not found';
-      }
-    } catch (error) {
-      setUserLoggedInState(userLoggedInStateEnum.notLoggedIn);
-    }
-  }, []);
   // search feature
   function Search(searchWord) {
     let result = [];
@@ -138,6 +133,7 @@ export default function Nav() {
         setLogoutState(logoutStateEnum.success);
         // check type and save login data in local storage
         localStorage.removeItem('user');
+        setUserState((e) => false);
         router.reload();
       } else {
         throw resp;
@@ -148,99 +144,485 @@ export default function Nav() {
   }
 
   return (
-    <div className="sticky top-0 bg-primary border-b py-2 mt-0">
-      <div className="max-w-contentWid 2xl:max-w-contentWidLg mx-auto grid grid-cols-4">
-        <div className="bg-secondary col-start-1 col-end-3 m-auto rounded-2xl">
-          {/* search */}
-          <div className="py-2 px-3 flex m-auto ">
-            <div className="m-auto flex m-auto">
-              <input
-                className="placeholder:text-onSecondary text-onSecondary focus:outline-none border-none m-auto flex bg-secondary text-sm sm:mx-2 p-1 w-16 sm:w-40 md:w-72 lg:w-96"
-                placeholder="Search"
-                id="search"
-                onChange={(e) => Search(e)}
-              />
-              <label htmlFor="search">
-                <FontAwesomeIcon
-                  className="cursor-pointer w-6 sm:w-6 text-onSecondary grid m-auto"
-                  icon={faSearch}
-                />
-              </label>
-            </div>
-          </div>
+    <div className="z-50 sticky top-0 bg-primary border-b py-1  mt-0">
+      <div className="max-w-contentWid 2xl:max-w-contentWidLg m-auto px-2 grid grid-cols-2">
+        <div className="text-accent font-bold text-2xl my-auto">
+          Shuk-Shukta Blogs
         </div>
-        <div className="m-auto">
-          {/* sort */}
-          <div className="flex">
-            <select
-              onChange={(e) => setSortBy(e.target.value)}
-              id="sort"
-              placeholder="sortby"
-              className="cursor-pointer text-lg font-normal text-onSecondary form-select gap-5 rounded m-2 w-0 sm:w-auto p-1 bg-primary appearance-none overflow-hidden"
-              defaultValue={'id'}
-            >
-              <option value="id" disabled>
-                sort by
-              </option>
-              <option value="title">Title</option>
-              <option value="date">Date</option>
-              <option value="upVote">Up votes</option>
-              <option value="seen">Audience</option>
-            </select>
-            <label htmlFor="sort" className="text-center m-auto">
-              <FontAwesomeIcon
-                className="cursor-pointer w-4 sm:w-4 m-auto flex text-onSecondary"
-                icon={faSort}
-              />
-            </label>
-            <Link href={`/bloggers`}>
-              <div className="m-auto p-2">bloggers</div>
-            </Link>
-          </div>
-        </div>
-        {userLoggedInState === userLoggedInStateEnum.loggedIn ? (
-          /* logged in display */
-          <div className="m-auto flex">
-            <Link href="/blogs/new">
-              <div className="flex">
-                <div className="pr-2  text-lg font-normal text-onSecondary">
-                  New
+        {userState === true &&
+        contentSearchableState === contentSearchableStateEnum.searchable ? (
+          <>
+            {/* user logged in + searchable nav start */}
+            <div className="grid grid-cols-10 gap-1 ml-auto my-auto max-w-navIconContainerWid3">
+              <Link href={'/'} className="">
+                <div data-tip="Home" className="p-2  my-auto ">
+                  <FontAwesomeIcon
+                    className="cursor-pointer w-5 text-onSecondary m-auto"
+                    icon={faHome}
+                  />
                 </div>
-                <FontAwesomeIcon
-                  className="cursor-pointer w-7 sm:w-7 text-onSecondary"
-                  icon={faCirclePlus}
-                />
+              </Link>
+              <Link href="/bloggers">
+                <div data-tip="Bloggers" className="p-2  my-auto">
+                  <FontAwesomeIcon
+                    className="cursor-pointer w-6 text-onSecondary m-auto"
+                    icon={faUsers}
+                  />
+                </div>
+              </Link>
+              {/* blogs */}
+              <Dropdown offset={0} className="text-sm">
+                <Dropdown.Trigger>
+                  <div data-tip="Blogs" className="p-2 my-auto  max-w-iconWid">
+                    <FontAwesomeIcon
+                      className="cursor-pointer w-5 text-onSecondary m-auto"
+                      icon={faBlog}
+                    />
+                  </div>
+                </Dropdown.Trigger>
+                <div className="w-28">
+                  <Dropdown.Menu aria-label="Static Actions" className="py-0">
+                    <Dropdown.Item
+                      key="myBlogs"
+                      className=" text-textColor1 text-sm p-0 my-2"
+                    >
+                      <Link
+                        href={{
+                          pathname: `/user/${loggedInUser.user.id}/blogs`,
+                          query: { token: loggedInUser.accessToken },
+                        }}
+                      >
+                        <div className="p-2 ">My Blogs</div>
+                      </Link>
+                    </Dropdown.Item>
+                  </Dropdown.Menu>
+                </div>
+              </Dropdown>
+              {/* sort */}
+              <Dropdown offset={0} className="text-sm">
+                <Dropdown.Trigger>
+                  <div data-tip="Sort" className="p-2 my-auto">
+                    <FontAwesomeIcon
+                      className="cursor-pointer w-3 text-onSecondary m-auto"
+                      icon={faSort}
+                    />
+                  </div>
+                </Dropdown.Trigger>
+                <div className="w-28">
+                  <Dropdown.Menu aria-label="Static Actions" className="py-0">
+                    <Dropdown.Item
+                      key="date"
+                      className=" text-textColor1 text-sm p-0 my-2"
+                    >
+                      <div className="p-2 " onClick={() => setSortBy('date')}>
+                        Date
+                      </div>
+                    </Dropdown.Item>
+                    <Dropdown.Item
+                      key="title"
+                      withDivider
+                      className=" text-textColor1 text-sm p-0 my-2"
+                    >
+                      <div className="p-2 " onClick={() => setSortBy('title')}>
+                        Title
+                      </div>
+                    </Dropdown.Item>
+                    <Dropdown.Item
+                      key="upvotes"
+                      withDivider
+                      className=" text-textColor1 text-sm p-0 my-2"
+                    >
+                      <div className="p-2 " onClick={() => setSortBy('upVote')}>
+                        Up Votes
+                      </div>
+                    </Dropdown.Item>
+                    <Dropdown.Item
+                      key="downVote"
+                      withDivider
+                      className=" text-textColor1 text-sm p-0 my-2"
+                    >
+                      <div
+                        className="p-2 "
+                        onClick={() => setSortBy('downVote')}
+                      >
+                        Down Votes
+                      </div>
+                    </Dropdown.Item>
+                    <Dropdown.Item
+                      key="author"
+                      withDivider
+                      className=" text-textColor1 text-sm p-0 my-2"
+                    >
+                      <div className="p-2 " onClick={() => setSortBy('author')}>
+                        Author
+                      </div>
+                    </Dropdown.Item>
+                  </Dropdown.Menu>
+                </div>
+              </Dropdown>
+              <Link href="/blogs/new">
+                <div data-tip="Add New Blog" className="p-2 my-auto">
+                  <FontAwesomeIcon
+                    className="cursor-pointer w-5 text-onSecondary m-auto"
+                    icon={faCirclePlus}
+                  />
+                </div>
+              </Link>
+              <div className=" col-span-4 p-2  my-auto">
+                <div className="m-auto rounded-lg grid grid-cols-5 bg-secondary gap-0">
+                  <input
+                    id="search"
+                    placeholder="Search"
+                    className="m-auto max-w-searchBarWid col-span-4 py-1 px-2  mx-1 rounded focus:border-0  focus:outline-none border-none placeholder:text-textColor1 text-textColor1 bg-secondary text-sm"
+                    onChange={(e) => Search(e)}
+                  />
+                  <label htmlFor="search" className="m-auto">
+                    <FontAwesomeIcon
+                      className="cursor-pointer w-4 text-onSecondary my-auto"
+                      icon={faSearch}
+                    />
+                  </label>
+                </div>
               </div>
-            </Link>
-            {/*             <Link href={`/user/${loggedInUser.user.id}/${loggedInUser.accessToken}`}>
-             */}{' '}
-            <Link
-              href={{
-                pathname: `/user/${loggedInUser.user.id}`,
-                query: { token: loggedInUser.accessToken },
-              }}
-            >
-              <button className="m-1">profile</button>
-            </Link>
-            <button className="m-1" onClick={() => handleLogout()}>
-              Logout
-            </button>
+              <Dropdown offset={0} className="text-sm">
+                <Dropdown.Trigger>
+                  <div
+                    data-tip="User Option"
+                    className="p-2  my-auto max-w-iconWid"
+                  >
+                    <FontAwesomeIcon
+                      className="cursor-pointer w-5 text-onSecondary m-auto"
+                      icon={faCircleUser}
+                    />
+                  </div>
+                </Dropdown.Trigger>
+                <div className="w-28">
+                  <Dropdown.Menu aria-label="Static Actions" className="py-0">
+                    <Dropdown.Item
+                      key="profile"
+                      className=" text-textColor1 text-sm p-0 my-2"
+                    >
+                      <Link
+                        href={{
+                          pathname: `/user/${loggedInUser.user.id}`,
+                          query: { token: loggedInUser.accessToken },
+                        }}
+                      >
+                        <div className="p-2 ">Profile</div>
+                      </Link>
+                    </Dropdown.Item>
+
+                    <Dropdown.Item
+                      key="delete"
+                      withDivider
+                      color="error"
+                      className="text-danger text-sm p-0 my-2"
+                    >
+                      <div className="p-2" onClick={() => handleLogout()}>
+                        Logout
+                      </div>
+                    </Dropdown.Item>
+                  </Dropdown.Menu>
+                </div>
+              </Dropdown>
+            </div>
+            {/* user logged in + searchable nav end */}
+          </>
+        ) : userState === false &&
+          contentSearchableState === contentSearchableStateEnum.searchable ? (
+          <>
+            {/* user not logged in + searchable nav start */}
+            <div className="grid grid-cols-10 gap-1 ml-auto my-auto max-w-navIconContainerWid2">
+              <Link href={'/'}>
+                <div data-tip="Home" className="p-2  my-auto ">
+                  <FontAwesomeIcon
+                    className="cursor-pointer w-5 text-onSecondary m-auto"
+                    icon={faHome}
+                  />
+                </div>
+              </Link>
+              <Link href="/bloggers">
+                <div data-tip="Bloggers" className="p-2  my-auto">
+                  <FontAwesomeIcon
+                    className="cursor-pointer w-6 text-onSecondary m-auto"
+                    icon={faUsers}
+                  />
+                </div>
+              </Link>
+
+              <Dropdown offset={0} className="text-sm">
+                <Dropdown.Trigger>
+                  <div data-tip="Sort" className="p-2 my-auto">
+                    <FontAwesomeIcon
+                      className="cursor-pointer w-3 text-onSecondary m-auto"
+                      icon={faSort}
+                    />
+                  </div>
+                </Dropdown.Trigger>
+                <div className="w-28">
+                  <Dropdown.Menu aria-label="Static Actions" className="py-0">
+                    <Dropdown.Item
+                      key="date"
+                      className=" text-textColor1 text-sm p-0 my-2"
+                    >
+                      <div className="p-2 " onClick={() => setSortBy('date')}>
+                        Date
+                      </div>
+                    </Dropdown.Item>
+                    <Dropdown.Item
+                      key="title"
+                      withDivider
+                      className=" text-textColor1 text-sm p-0 my-2"
+                    >
+                      <div className="p-2 " onClick={() => setSortBy('title')}>
+                        Title
+                      </div>
+                    </Dropdown.Item>
+                    <Dropdown.Item
+                      key="upvotes"
+                      withDivider
+                      className=" text-textColor1 text-sm p-0 my-2"
+                    >
+                      <div className="p-2 " onClick={() => setSortBy('upVote')}>
+                        Up Votes
+                      </div>
+                    </Dropdown.Item>
+                    <Dropdown.Item
+                      key="downVote"
+                      withDivider
+                      className=" text-textColor1 text-sm p-0 my-2"
+                    >
+                      <div
+                        className="p-2 "
+                        onClick={() => setSortBy('downVote')}
+                      >
+                        Down Votes
+                      </div>
+                    </Dropdown.Item>
+                    <Dropdown.Item
+                      key="author"
+                      withDivider
+                      className=" text-textColor1 text-sm p-0 my-2"
+                    >
+                      <div className="p-2 " onClick={() => setSortBy('author')}>
+                        Author
+                      </div>
+                    </Dropdown.Item>
+                  </Dropdown.Menu>
+                </div>
+              </Dropdown>
+
+              <div className=" col-span-4 p-2  my-auto">
+                <div className="m-auto rounded-lg grid grid-cols-5 bg-secondary gap-0">
+                  <input
+                    id="search"
+                    placeholder="Search"
+                    className="m-auto max-w-searchBarWid col-span-4 py-1 px-2  mx-1 rounded focus:border-0  focus:outline-none border-none placeholder:text-textColor1 text-textColor1 bg-secondary text-sm"
+                    onChange={(e) => Search(e)}
+                  />
+                  <label htmlFor="search" className="m-auto">
+                    <FontAwesomeIcon
+                      className="cursor-pointer w-4 text-onSecondary my-auto"
+                      icon={faSearch}
+                    />
+                  </label>
+                </div>
+              </div>
+              {/* auth start */}
+              <div className="p-2  my-auto grid grid-cols-2 col-span-3 text-sm font-bold text-textColor1">
+                <Link href="/auth/signup">
+                  <a>
+                    <div
+                      data-tip="Get an account"
+                      className=" border-r text-end pr-2 cursor-pointer"
+                    >
+                      Signup
+                    </div>
+                  </a>
+                </Link>
+                <Link href="/auth/login">
+                  <a>
+                    <div
+                      data-tip="Log into your account"
+                      className=" text-start pl-2 cursor-pointer"
+                    >
+                      Login
+                    </div>
+                  </a>
+                </Link>
+              </div>
+              {/* auth end */}
+            </div>
+            {/* user not logged in + searchable nav end */}
+          </>
+        ) : userState === false &&
+          contentSearchableState ===
+            contentSearchableStateEnum.notSearchable ? (
+          <>
+            {/* user not logged in + not searchable nav start */}
+            <div className="my-auto ml-auto">
+              <div className="grid grid-cols-4 gap-6 my-auto max-w-navIconContainerWid1">
+                <div data-tip="Home" className="p-2  my-auto  max-w-iconWid1">
+                  <FontAwesomeIcon
+                    className="cursor-pointer w-5 text-onSecondary m-auto"
+                    icon={faHome}
+                  />
+                </div>
+
+                <div
+                  data-tip="Bloggers"
+                  className="p-2  my-auto max-w-iconWid1 "
+                >
+                  <FontAwesomeIcon
+                    className="cursor-pointer w-6 text-onSecondary m-auto"
+                    icon={faUsers}
+                  />
+                </div>
+
+                {/* auth start */}
+                <div className="my-auto grid grid-cols-2 col-span-2 text-sm font-bold text-textColor1">
+                  <Link href="/auth/signup">
+                    <a>
+                      <div
+                        data-tip="Get an account"
+                        className=" border-r text-end pr-2 cursor-pointer"
+                      >
+                        Signup
+                      </div>
+                    </a>
+                  </Link>
+                  <Link href="/auth/login">
+                    <a>
+                      <div
+                        data-tip="Log into your account"
+                        className=" text-start pl-2 cursor-pointer"
+                      >
+                        Login
+                      </div>
+                    </a>
+                  </Link>
+                </div>
+                {/* auth end */}
+              </div>
+            </div>
+            {/* user not logged in + not searchable nav end */}
+          </>
+        ) : userState === true &&
+          contentSearchableState ===
+            contentSearchableStateEnum.notSearchable ? (
+          <div className="ml-auto">
+            {/* user logged in + not searchable nav start */}
+            <div className="grid grid-cols-5 gap-6  my-auto  max-w-navIconContainerWid1 ">
+              <Link href="/">
+                <a>
+                  <div data-tip="Home" className="p-2  my-auto  max-w-iconWid">
+                    <FontAwesomeIcon
+                      className="cursor-pointer w-5 text-onSecondary m-auto"
+                      icon={faHome}
+                    />
+                  </div>
+                </a>
+              </Link>
+              <Link href="/bloggers">
+                <a>
+                  <div
+                    data-tip="Bloggers"
+                    className="p-2  my-auto max-w-iconWid"
+                  >
+                    <FontAwesomeIcon
+                      className="cursor-pointer w-6 text-onSecondary m-auto"
+                      icon={faUsers}
+                    />
+                  </div>
+                </a>
+              </Link>
+
+              <Dropdown offset={0} className="text-sm">
+                <Dropdown.Trigger>
+                  <div data-tip="Blogs" className="p-2 my-auto  max-w-iconWid">
+                    <FontAwesomeIcon
+                      className="cursor-pointer w-5 text-onSecondary m-auto"
+                      icon={faBlog}
+                    />
+                  </div>
+                </Dropdown.Trigger>
+                <div className="w-28">
+                  <Dropdown.Menu aria-label="Static Actions" className="py-0">
+                    <Dropdown.Item
+                      key="myBlogs"
+                      className=" text-textColor1 text-sm p-0 my-2"
+                    >
+                      <Link
+                        href={{
+                          pathname: `/user/${loggedInUser.user.id}/blogs`,
+                          query: { token: loggedInUser.accessToken },
+                        }}
+                      >
+                        <div className="p-2 ">My Blogs</div>
+                      </Link>
+                    </Dropdown.Item>
+                  </Dropdown.Menu>
+                </div>
+              </Dropdown>
+
+              <Link href="/blogs/new">
+                <a>
+                  <div
+                    data-tip="Add New Blog"
+                    className="p-2 my-auto max-w-iconWid"
+                  >
+                    <FontAwesomeIcon
+                      className="cursor-pointer w-5 text-onSecondary m-auto"
+                      icon={faCirclePlus}
+                    />
+                  </div>
+                </a>
+              </Link>
+              <Dropdown offset={0} className="text-sm">
+                <Dropdown.Trigger>
+                  <div
+                    data-tip="User Option"
+                    className="p-2  my-auto max-w-iconWid"
+                  >
+                    <FontAwesomeIcon
+                      className="cursor-pointer w-5 text-onSecondary m-auto"
+                      icon={faCircleUser}
+                    />
+                  </div>
+                </Dropdown.Trigger>
+                <div className="w-28">
+                  <Dropdown.Menu aria-label="Static Actions" className="py-0">
+                    <Dropdown.Item
+                      key="profile"
+                      className=" text-textColor1 text-sm p-0 my-2"
+                    >
+                      <Link
+                        href={{
+                          pathname: `/user/${loggedInUser.user.id}`,
+                          query: { token: loggedInUser.accessToken },
+                        }}
+                      >
+                        <div className="p-2 ">Profile</div>
+                      </Link>
+                    </Dropdown.Item>
+
+                    <Dropdown.Item
+                      key="delete"
+                      withDivider
+                      color="error"
+                      className="text-danger text-sm p-0 my-2"
+                    >
+                      <div className="p-2" onClick={() => handleLogout()}>
+                        Logout
+                      </div>
+                    </Dropdown.Item>
+                  </Dropdown.Menu>
+                </div>
+              </Dropdown>
+            </div>
+            {/* user logged in + not searchable nav end */}
           </div>
-        ) : (
-          /* not logged in display */
-          <div>
-            <Link href={`/auth/login`}>
-              <a>
-                <div>Login</div>
-              </a>
-            </Link>
-            <Link href={`/auth/signup`}>
-              <a>
-                <div>Signup</div>
-              </a>
-            </Link>
-          </div>
-        )}
+        ) : null}
       </div>
     </div>
   );

@@ -1,7 +1,21 @@
 import { useRouter } from 'next/router';
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
+import {
+  loggedInUserContext,
+  loggedInUserSetterContext,
+  userStatusContext,
+  userStatusSetterContext,
+} from '../../components/UserContextProvider';
 
-export default function Signup() {
+export default function Login() {
+  const router = useRouter();
+  const url = process.env.url;
+  // getting the user data context
+  const userState = useContext(userStatusContext);
+  const setUserState = useContext(userStatusSetterContext);
+  const loggedInUser = useContext(loggedInUserContext);
+  const setLoggedInUser = useContext(loggedInUserSetterContext);
+
   const loginEnum = {
     idl: 'idl',
     loggingIn: 'Logging In',
@@ -12,10 +26,6 @@ export default function Signup() {
 
   const errorStateEnum = { idl: 'idl' };
   const [errorState, setErrorState] = useState(errorStateEnum.idl);
-
-  const router = useRouter();
-
-  const url = process.env.url;
 
   async function handleLogin(form) {
     form.preventDefault();
@@ -42,11 +52,16 @@ export default function Signup() {
       if (response.status === 200) {
         setLoginState(loginEnum.success);
         setErrorState(errorStateEnum.idl);
+        setUserState(true);
         // check type and save login data in local storage
-        typeof resp === 'string'
-          ? localStorage.setItem('user', resp)
-          : localStorage.setItem('user', JSON.stringify(resp));
-        console.log('login resp',resp);
+        if (typeof resp === 'string') {
+          localStorage.setItem('user', resp);
+          setLoggedInUser(e=>JSON.parse(resp));
+        } else {
+          localStorage.setItem('user', JSON.stringify(resp));
+          setLoggedInUser(e=>resp);
+        }
+        // console.log('login resp', resp);
         router.push('/');
       } else {
         throw resp;
@@ -54,6 +69,7 @@ export default function Signup() {
     } catch (error) {
       console.log('error', error.toString() || JSON.stringify(error));
       setLoginState(loginEnum.failed);
+      setUserState(false);
       try {
         setErrorState(JSON.parse(error).error.message);
       } catch (err) {

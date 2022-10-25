@@ -25,6 +25,7 @@ export default function User(props) {
       >
         <button>edit profile</button>
       </Link>
+      
     </div>
   );
 }

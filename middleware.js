@@ -4,6 +4,7 @@ import { NextRequest } from 'next/server';
 import * as jose from 'jose';
 import { useRouter } from 'next/router';
 import isAuthValid from './components/api/functions/isAuthValid';
+import NextCors from 'nextjs-cors';
 
 export async function middleware(NextRequest) {
   //working with the api
@@ -28,6 +29,14 @@ export async function middleware(NextRequest) {
       return NextResponse.next();
     }
   }
+  // else {
+  //   await NextCors(NextRequest, NextResponse, {
+  //     // Options
+  //     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
+  //     origin: '*',
+  //     optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
+  //  });
+  // }
 }
 
 export const config = {

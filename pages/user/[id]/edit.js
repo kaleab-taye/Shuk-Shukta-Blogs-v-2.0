@@ -2,10 +2,12 @@ import { useRouter } from 'next/router';
 import { useState } from 'react';
 
 export default function User(props) {
-    const router = useRouter()
+  const url = process.env.url
+  const router = useRouter();
   const profileUpdateStateEnum = {
     idl: 'ild',
     publishing: 'Publishing . . .',
+    deleting: 'Deleting . . .',
     success: 'Success',
     failed: 'Failed',
   };
@@ -26,7 +28,9 @@ export default function User(props) {
     try {
       let headersList = {
         'Content-Type': 'application/json',
-        'Authorization' : `Bearer ${JSON.parse(localStorage.getItem('user')).accessToken}`
+        Authorization: `Bearer ${
+          JSON.parse(localStorage.getItem('user')).accessToken
+        }`,
       };
 
       let bodyContent = JSON.stringify({
@@ -36,13 +40,13 @@ export default function User(props) {
         password: form.target.password.value,
       });
       let response = await fetch(`${url}/api/user/${props.user.id}`, {
-          method: 'POST',
-          body: bodyContent,
-          headers: headersList,
-        });
-        const resp =await response.text()
-        // console.log(resp)
-      if (await response.status === 200) {
+        method: 'POST',
+        body: bodyContent,
+        headers: headersList,
+      });
+      const resp = await response.text();
+      // console.log(resp)
+      if ((await response.status) === 200) {
         setProfileUpdateState(profileUpdateStateEnum.success);
         router.push(`/user/${props.user.id}?token=${props.accessToken}`);
       } else {
@@ -54,6 +58,31 @@ export default function User(props) {
       setErrorState(error.toString());
       //   setStatus(statusEnum.notDeleted);
       //   setError(`error ${error}`);
+    }
+  }
+
+  async function handleDeleteAccount(event) {
+    setProfileUpdateState(profileUpdateStateEnum.deleting);
+    try {     
+  
+      let result = await fetch(
+        `${url}/api/user/${props.userId}`,
+        {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${props.token}` },
+        }
+      );
+      let res = await result.text();
+
+      if (result.status === 200) {
+        setProfileUpdateState(profileUpdateStateEnum.success);
+      } else {
+        throw res;
+      }
+    } catch (error) {
+      console.error(error);
+      setProfileUpdateState(profileUpdateStateEnum.failed);
+      setErrorState(error);
     }
   }
 
@@ -115,6 +144,7 @@ export default function User(props) {
           update profile
         </button>
       </form>
+      <button onClick={(e) => handleDeleteAccount(e)}>delete account</button>
     </div>
   );
 }
@@ -124,9 +154,9 @@ export const getServerSideProps = async (context) => {
   const accessToken = context.query.token;
 
   try {
-    let res = await fetch(`${url}/api/user/${context.params.id}`,{
+    let res = await fetch(`${url}/api/user/${context.params.id}`, {
       method: 'GET',
-      headers: {'Authorization': `Bearer ${accessToken}`},
+      headers: { Authorization: `Bearer ${accessToken}` },
     });
     var user = await res.json();
     if (res.status !== 200) {
@@ -142,7 +172,8 @@ export const getServerSideProps = async (context) => {
   return {
     props: {
       user,
-      accessToken
+      token:accessToken,
+      userId : context.params.id
     },
   };
 };

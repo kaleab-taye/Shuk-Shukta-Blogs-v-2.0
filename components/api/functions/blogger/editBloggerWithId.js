@@ -10,7 +10,6 @@ export async function editBloggerWithId(id, blogger) {
       throw 'no bloggers found';
     }
     if(!blogger.userName || blogger.userName.length<1){
-      console.log('rr',blogger.userName)
       throw 'username not found'
     }
 

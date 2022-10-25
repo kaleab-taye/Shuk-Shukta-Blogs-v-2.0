@@ -18,8 +18,8 @@ export async function createNewBlog(blog) {
     let response = await blogModel.create(newBlog);
 
     let user = await userModel.findOne({ _id: blog.author });
-
-    user.blogs.push( response._id);
+// console.log('__id',(response._id).toString())
+    user.blogs.push((response._id).toString());
     user.save();
 
     // console.log(response);

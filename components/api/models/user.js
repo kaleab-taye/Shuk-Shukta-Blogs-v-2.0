@@ -9,11 +9,7 @@ const userSchema = Mongoose.Schema({
   lastName: String,
   profileUrl: String,
   joinedDate: { type: Date, default: () => Date.now(), immutable: true },
-  blogs: [
-    {
-      id: { type: Mongoose.Schema.Types.ObjectId, ref: 'blog' },
-    },
-  ],
+  blogs: [{ type: Mongoose.Schema.Types.ObjectId, ref: 'blog' }],
 });
 
 export const userModel =
